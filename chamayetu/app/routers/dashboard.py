@@ -71,8 +71,8 @@ async def dashboard_page(
     ).order_by(Contribution.initiated_at.desc()).limit(5).all()
     
     return templates.TemplateResponse(
-        "dashboard/index.html",
-        {
+        name="dashboard/index.html",
+        context={
             "request": request,
             "title": "Dashboard",
             "current_user": current_user,

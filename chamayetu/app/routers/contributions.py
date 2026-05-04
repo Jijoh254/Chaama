@@ -20,8 +20,8 @@ async def contributions_history(
 ):
     """Show user's contribution history (placeholder)."""
     return templates.TemplateResponse(
-        "contributions/history.html",
-        {
+        name="contributions/history.html",
+        context={
             "request": request,
             "title": "Contribution History",
             "current_user": current_user,
