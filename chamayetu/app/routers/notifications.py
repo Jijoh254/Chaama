@@ -28,8 +28,8 @@ async def notifications_page(
 ):
     """Show user's notifications."""
     return templates.TemplateResponse(
-        name="notifications/index.html",
-        context={
+        "notifications/index.html",
+        {
             "request": request,
             "title": "Notifications",
             "current_user": current_user

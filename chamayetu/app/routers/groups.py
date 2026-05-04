@@ -37,8 +37,8 @@ async def groups_list(
     ).order_by(Group.created_at.desc()).all()
     
     return templates.TemplateResponse(
-        name="groups/list.html",
-        context={
+        "groups/list.html",
+        {
             "request": request,
             "title": "My Groups",
             "current_user": current_user,
@@ -131,8 +131,8 @@ async def group_detail(
     ).first()
     
     return templates.TemplateResponse(
-        name="groups/detail.html",
-        context={
+        "groups/detail.html",
+        {
             "request": request,
             "title": group.name,
             "current_user": current_user,
