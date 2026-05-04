@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0"><i class="bi bi-receipt me-2"></i>Contribution History</h5>
+    </div>
+    <div class="card-body">
+        {% if contributions %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Group</th>
+                        <th>Cycle</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Receipt</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for contribution in contributions %}
+                    <tr>
+                        <td>{{ contribution.initiated_at.strftime('%b %d, %Y %H:%M') }}</td>
+                        <td>{{ contribution.cycle.group.name }}</td>
+                        <td>#{{ contribution.cycle.cycle_number }}</td>
+                        <td>KES {{ "{:,.0f}".format(contribution.amount) }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if contribution.status == 'confirmed' else 'danger' if contribution.status == 'failed' else 'warning' }}">
+                                {{ contribution.status|capitalize }}
+                            </span>
+                        </td>
+                        <td>{{ contribution.mpesa_receipt_number or '-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-receipt fs-1 text-muted"></i>
+            <h5 class="mt-3">No Contributions Yet</h5>
+            <p class="text-muted">Your contribution history will appear here once you start contributing to groups.</p>
+            <a href="/groups" class="btn btn-primary mt-2">
+                <i class="bi bi-people me-1"></i>View Groups
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

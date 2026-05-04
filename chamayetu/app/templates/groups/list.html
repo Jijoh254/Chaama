@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-people me-2"></i>My Groups</h5>
+                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createGroupModal">
+                    <i class="bi bi-plus-circle me-1"></i>Create Group
+                </button>
+            </div>
+            <div class="card-body">
+                {% if groups %}
+                <div class="row g-4">
+                    {% for group in groups %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 shadow-sm border-0">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ group.name }}</h5>
+                                <p class="card-text text-muted small">{{ group.description[:80] }}...</p>
+                                <div class="mb-3">
+                                    <span class="badge bg-primary me-1">KES {{ "{:,.0f}".format(group.contribution_amount) }}</span>
+                                    <span class="badge bg-secondary">{{ group.frequency.value|capitalize }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        <i class="bi bi-people me-1"></i>
+                                        {{ group.members|length }}/{{ group.max_members }} members
+                                    </small>
+                                    <span class="badge bg-{{ 'success' if group.status == 'active' else 'warning' }}">
+                                        {{ group.status|capitalize }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-white border-0">
+                                <a href="/groups/{{ group.id }}" class="btn btn-outline-primary btn-sm w-100">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-people fs-1 text-muted"></i>
+                    <h5 class="mt-3">No Groups Yet</h5>
+                    <p class="text-muted">Create a new group or join an existing one with an invite code.</p>
+                    <div class="mt-3">
+                        <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#createGroupModal">
+                            <i class="bi bi-plus-circle me-1"></i>Create Group
+                        </button>
+                        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#joinGroupModal">
+                            <i class="bi bi-box-arrow-in-right me-1"></i>Join Group
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Group Modal -->
+<div class="modal fade" id="createGroupModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="/groups">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New Group</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Group Name</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="description" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Contribution Amount (KES)</label>
+                        <input type="number" class="form-control" name="contribution_amount" step="0.01" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Frequency</label>
+                        <select class="form-select" name="frequency" required>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Max Members</label>
+                        <input type="number" class="form-control" name="max_members" min="2" max="50" value="5" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Group</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Join Group Modal -->
+<div class="modal fade" id="joinGroupModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="/groups/join">
+                <div class="modal-header">
+                    <h5 class="modal-title">Join Existing Group</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Invite Code</label>
+                        <input type="text" class="form-control" name="invite_code" placeholder="8-character code" required>
+                        <small class="form-text text-muted">Enter the 8-character invite code from your group admin.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Join Group</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

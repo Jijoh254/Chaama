@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 100vh;">
+    <div class="col-md-8 col-lg-5">
+        <div class="card shadow-lg border-0 rounded-lg">
+            <div class="card-header bg-primary text-white text-center py-4">
+                <h3 class="mb-0"><i class="bi bi-people-fill me-2"></i>ChamaYetu</h3>
+                <p class="mb-0 mt-2 small">Create your account</p>
+            </div>
+            
+            <div class="card-body p-4">
+                {% if errors %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <ul class="mb-0">
+                        {% for error in errors %}
+                        <li><i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endif %}
+                
+                <form method="POST" action="/auth/register">
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="full_name" name="full_name" 
+                               placeholder="Full Name" required autofocus
+                               value="{{ form_data.full_name if form_data else '' }}">
+                        <label for="full_name">Full Name</label>
+                    </div>
+                    
+                    <div class="form-floating mb-3">
+                        <input type="email" class="form-control" id="email" name="email" 
+                               placeholder="name@example.com" required
+                               value="{{ form_data.email if form_data else '' }}">
+                        <label for="email">Email Address</label>
+                    </div>
+                    
+                    <div class="form-floating mb-3">
+                        <input type="tel" class="form-control" id="phone_number" name="phone_number" 
+                               placeholder="2547XXXXXXXX" required
+                               value="{{ form_data.phone_number if form_data else '' }}">
+                        <label for="phone_number">Phone Number (e.g., 254712345678)</label>
+                        <small class="form-text text-muted">Format: 254 followed by 9 digits</small>
+                    </div>
+                    
+                    <div class="form-floating mb-3">
+                        <input type="password" class="form-control" id="password" name="password" 
+                               placeholder="Password" required minlength="6">
+                        <label for="password">Password (min 6 characters)</label>
+                    </div>
+                    
+                    <div class="form-floating mb-3">
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" 
+                               placeholder="Confirm Password" required>
+                        <label for="confirm_password">Confirm Password</label>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-person-plus me-2"></i>Create Account
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="card-footer text-center py-3 bg-light">
+                <div class="small">
+                    Already have an account? 
+                    <a href="/auth/login" class="text-decoration-none">Login here</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

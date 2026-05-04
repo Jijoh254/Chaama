@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin/dashboard">Admin Dashboard</a></li>
+                <li class="breadcrumb-item active">Manage Groups</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-people-circle me-2"></i>All Groups ({{ groups|length }})</h5>
+        <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#searchPanel">
+            <i class="bi bi-search me-1"></i>Search
+        </button>
+    </div>
+    
+    <!-- Search Panel -->
+    <div id="searchPanel" class="collapse">
+        <div class="card-body bg-light">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <input type="text" class="form-control" id="searchName" placeholder="Search by group name...">
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="filterStatus">
+                        <option value="">All Statuses</option>
+                        <option value="active">Active</option>
+                        <option value="paused">Paused</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="filterFrequency">
+                        <option value="">All Frequencies</option>
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-primary w-100" onclick="filterGroups()">
+                        <i class="bi bi-funnel me-1"></i>Filter
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" id="groupsTable">
+                <thead class="bg-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Group Name</th>
+                        <th>Description</th>
+                        <th>Contribution</th>
+                        <th>Frequency</th>
+                        <th>Members</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for group in groups %}
+                    <tr data-name="{{ group.name|lower }}" data-status="{{ group.status }}" data-frequency="{{ group.frequency }}">
+                        <td><strong>#{{ group.id }}</strong></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-2" 
+                                     style="width: 36px; height: 36px;">
+                                    {{ group.name[0]|upper if group.name else 'G' }}
+                                </div>
+                                {{ group.name }}
+                            </div>
+                        </td>
+                        <td>
+                            <small class="text-muted">{{ (group.description or 'No description')[:50] }}{% if group.description and group.description|length > 50 %}...{% endif %}</small>
+                        </td>
+                        <td>
+                            <strong>KES {{ "%.2f"|format(group.contribution_amount) }}</strong>
+                        </td>
+                        <td>
+                            <span class="badge bg-info">{{ group.frequency|capitalize }}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">{{ group.max_members }} max</span>
+                        </td>
+                        <td>
+                            <span class="badge {% if group.status == 'active' %}bg-success{% elif group.status == 'paused' %}bg-warning{% elif group.status == 'completed' %}bg-secondary{% else %}bg-light text-dark{% endif %}">
+                                {{ group.status|capitalize }}
+                            </span>
+                        </td>
+                        <td>
+                            <small>{{ group.created_at.strftime('%Y-%m-%d') if group.created_at else 'N/A' }}</small>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a href="/groups/{{ group.id }}" class="btn btn-outline-info" title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <button type="button" class="btn btn-outline-warning" title="Edit Group">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-danger" title="Delete Group">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% if not groups %}
+                    <tr>
+                        <td colspan="9" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-1"></i>
+                            <p class="mt-2">No groups found</p>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    {% if groups %}
+    <div class="card-footer bg-white">
+        <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted">Showing all {{ groups|length }} groups</small>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#">Previous</a>
+                    </li>
+                    <li class="page-item active">
+                        <a class="page-link" href="#">1</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Group Statistics -->
+<div class="row g-4 mt-4">
+    <div class="col-md-3">
+        <div class="card bg-success text-white h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-check-circle-fill fs-2 mb-2"></i>
+                <h3>{{ groups|selectattr('status', 'equalto', 'active')|list|length }}</h3>
+                <small>Active Groups</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-pause-circle-fill fs-2 mb-2"></i>
+                <h3>{{ groups|selectattr('status', 'equalto', 'paused')|list|length }}</h3>
+                <small>Paused Groups</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-secondary text-white h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-archive-fill fs-2 mb-2"></i>
+                <h3>{{ groups|selectattr('status', 'equalto', 'completed')|list|length }}</h3>
+                <small>Completed Groups</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-primary text-white h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-cash-stack fs-2 mb-2"></i>
+                <h3>KES {{ groups|sum(attribute='contribution_amount')|round(2) }}</h3>
+                <small>Total Contribution Value</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function filterGroups() {
+        const searchTerm = document.getElementById('searchName').value.toLowerCase();
+        const filterStatus = document.getElementById('filterStatus').value;
+        const filterFrequency = document.getElementById('filterFrequency').value;
+        
+        const rows = document.querySelectorAll('#groupsTable tbody tr[data-name]');
+        
+        rows.forEach(row => {
+            const name = row.getAttribute('data-name');
+            const status = row.getAttribute('data-status');
+            const frequency = row.getAttribute('data-frequency');
+            
+            const matchesName = !searchTerm || name.includes(searchTerm);
+            const matchesStatus = !filterStatus || status === filterStatus;
+            const matchesFrequency = !filterFrequency || frequency === filterFrequency;
+            
+            if (matchesName && matchesStatus && matchesFrequency) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+</script>
+{% endblock %}

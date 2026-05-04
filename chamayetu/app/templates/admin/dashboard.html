@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-info d-flex align-items-center" role="alert">
+            <i class="bi bi-shield-check fs-4 me-3"></i>
+            <div>
+                <strong>Admin Panel</strong> - You have full system access to manage all users, groups, and platform settings.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white h-100 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-uppercase mb-1">Total Users</h6>
+                        <h2 class="mb-0">{{ stats.total_users }}</h2>
+                    </div>
+                    <i class="bi bi-people-fill fs-1 opacity-50"></i>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a href="/admin/users" class="text-white text-decoration-none">
+                    <small>View all users <i class="bi bi-arrow-right"></i></small>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-success text-white h-100 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-uppercase mb-1">Total Groups</h6>
+                        <h2 class="mb-0">{{ stats.total_groups }}</h2>
+                    </div>
+                    <i class="bi bi-people-circle fs-1 opacity-50"></i>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a href="/admin/groups" class="text-white text-decoration-none">
+                    <small>View all groups <i class="bi bi-arrow-right"></i></small>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark h-100 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-uppercase mb-1">Active Cycles</h6>
+                        <h2 class="mb-0">{{ stats.active_cycles }}</h2>
+                    </div>
+                    <i class="bi bi-arrow-repeat fs-1 opacity-50"></i>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <small>Currently running merry-go-round cycles</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-info text-white h-100 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-uppercase mb-1">Total Contributions</h6>
+                        <h2 class="mb-0">{{ stats.total_contributions }}</h2>
+                    </div>
+                    <i class="bi bi-cash-stack fs-1 opacity-50"></i>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <small>Total contributions across all groups</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Stats Row -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white border-bottom">
+                <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Platform Overview</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <div class="p-3 bg-light rounded">
+                            <i class="bi bi-check-circle-fill text-success fs-3"></i>
+                            <h4 class="mt-2 mb-0">{{ stats.total_payouts }}</h4>
+                            <small class="text-muted">Total Payouts</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="p-3 bg-light rounded">
+                            <i class="bi bi-wallet2-fill text-primary fs-3"></i>
+                            <h4 class="mt-2 mb-0">KES 0</h4>
+                            <small class="text-muted">Total Disbursed</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white border-bottom">
+                <h5 class="mb-0"><i class="bi bi-gear me-2"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary" type="button">
+                        <i class="bi bi-sliders me-2"></i>M-Pesa Configuration
+                    </button>
+                    <button class="btn btn-outline-primary" type="button">
+                        <i class="bi bi-bell me-2"></i>Send Platform Notification
+                    </button>
+                    <button class="btn btn-outline-primary" type="button">
+                        <i class="bi bi-download me-2"></i>Export Reports
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity Section -->
+<div class="row g-4">
+    <!-- Recent Users -->
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-person-plus me-2"></i>Recent Users</h5>
+                <a href="/admin/users" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for user in recent_users %}
+                    <div class="list-group-item px-3 py-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-0">{{ user.full_name }}</h6>
+                                <small class="text-muted">{{ user.email }}</small>
+                            </div>
+                            <span class="badge {% if user.role == 'admin' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                {{ user.role }}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% if not recent_users %}
+                    <div class="p-3 text-center text-muted">
+                        <small>No users yet</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Groups -->
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-people-fill me-2"></i>Recent Groups</h5>
+                <a href="/admin/groups" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for group in recent_groups %}
+                    <div class="list-group-item px-3 py-2">
+                        <div>
+                            <h6 class="mb-0">{{ group.name }}</h6>
+                            <small class="text-muted">
+                                KES {{ group.contribution_amount }} • {{ group.frequency }}
+                            </small>
+                            <div>
+                                <span class="badge {% if group.status == 'active' %}bg-success{% elif group.status == 'paused' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                    {{ group.status }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% if not recent_groups %}
+                    <div class="p-3 text-center text-muted">
+                        <small>No groups yet</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Cycles -->
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-arrow-repeat me-2"></i>Recent Cycles</h5>
+                <a href="#" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for cycle in recent_cycles %}
+                    <div class="list-group-item px-3 py-2">
+                        <div>
+                            <h6 class="mb-0">Cycle #{{ cycle.cycle_number }}</h6>
+                            <small class="text-muted">
+                                Group ID: {{ cycle.group_id }}
+                            </small>
+                            <div>
+                                <span class="badge {% if cycle.status == 'active' %}bg-primary{% elif cycle.status == 'completed' %}bg-success{% elif cycle.status == 'disbursed' %}bg-info{% else %}bg-secondary{% endif %}">
+                                    {{ cycle.status }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% if not recent_cycles %}
+                    <div class="p-3 text-center text-muted">
+                        <small>No cycles yet</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Update notification badge on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/api/notifications/unread-count')
+            .then(response => response.json())
+            .then(data => {
+                const badge = document.getElementById('notification-badge');
+                if (data.count > 0) {
+                    badge.textContent = data.count;
+                    badge.classList.remove('d-none');
+                }
+            })
+            .catch(err => console.error('Error fetching notifications:', err));
+    });
+</script>
+{% endblock %}
