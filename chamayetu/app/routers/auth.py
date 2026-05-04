@@ -30,6 +30,7 @@ templates = Jinja2Templates(
 @router.get("/login")
 async def login_page(
     request: Request,
+    db: Session = Depends(get_db),
     current_user: dict = Depends(get_optional_current_user)
 ):
     """Render login page."""
@@ -38,8 +39,8 @@ async def login_page(
         return RedirectResponse(url="/dashboard", status_code=status.HTTP_302_FOUND)
     
     return templates.TemplateResponse(
-        "auth/login.html",
-        {"request": request, "title": "Login"}
+        name="auth/login.html",
+        context={"request": request, "title": "Login"}
     )
 
 
@@ -57,8 +58,8 @@ async def login_submit(
     if not user:
         # Invalid credentials - re-render login with error
         return templates.TemplateResponse(
-            "auth/login.html",
-            {
+            name="auth/login.html",
+            context={
                 "request": request,
                 "title": "Login",
                 "error": "Invalid email or password"
@@ -88,6 +89,7 @@ async def login_submit(
 @router.get("/register")
 async def register_page(
     request: Request,
+    db: Session = Depends(get_db),
     current_user: dict = Depends(get_optional_current_user)
 ):
     """Render registration page."""
@@ -96,8 +98,8 @@ async def register_page(
         return RedirectResponse(url="/dashboard", status_code=status.HTTP_302_FOUND)
     
     return templates.TemplateResponse(
-        "auth/register.html",
-        {"request": request, "title": "Register"}
+        name="auth/register.html",
+        context={"request": request, "title": "Register"}
     )
 
 
@@ -140,8 +142,8 @@ async def register_submit(
     
     if errors:
         return templates.TemplateResponse(
-            "auth/register.html",
-            {
+            name="auth/register.html",
+            context={
                 "request": request,
                 "title": "Register",
                 "errors": errors,
