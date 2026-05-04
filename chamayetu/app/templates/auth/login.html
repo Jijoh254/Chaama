@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 100vh;">
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow-lg border-0 rounded-lg">
+            <div class="card-header bg-primary text-white text-center py-4">
+                <h3 class="mb-0"><i class="bi bi-people-fill me-2"></i>ChamaYetu</h3>
+                <p class="mb-0 mt-2 small">Login to your account</p>
+            </div>
+            
+            <div class="card-body p-4">
+                {% if error %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endif %}
+                
+                <form method="POST" action="/auth/login">
+                    <div class="form-floating mb-3">
+                        <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" required autofocus>
+                        <label for="email">Email Address</label>
+                    </div>
+                    
+                    <div class="form-floating mb-3">
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                        <label for="password">Password</label>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="card-footer text-center py-3 bg-light">
+                <div class="small">
+                    Don't have an account? 
+                    <a href="/auth/register" class="text-decoration-none">Create one!</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Demo credentials -->
+        <div class="mt-4 p-3 bg-white rounded shadow-sm">
+            <h6 class="fw-bold mb-2"><i class="bi bi-info-circle me-2"></i>Demo Credentials</h6>
+            <p class="small mb-1">After registering, you can login with your credentials.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

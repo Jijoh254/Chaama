@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin/dashboard">Admin Dashboard</a></li>
+                <li class="breadcrumb-item active">Manage Users</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-people-fill me-2"></i>All Users ({{ users|length }})</h5>
+        <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#searchPanel">
+            <i class="bi bi-search me-1"></i>Search
+        </button>
+    </div>
+    
+    <!-- Search Panel -->
+    <div id="searchPanel" class="collapse">
+        <div class="card-body bg-light">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <input type="text" class="form-control" id="searchName" placeholder="Search by name...">
+                </div>
+                <div class="col-md-4">
+                    <input type="email" class="form-control" id="searchEmail" placeholder="Search by email...">
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" id="filterRole">
+                        <option value="">All Roles</option>
+                        <option value="admin">Admin</option>
+                        <option value="member">Member</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-primary w-100" onclick="filterUsers()">
+                        <i class="bi bi-funnel me-1"></i>Filter
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" id="usersTable">
+                <thead class="bg-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Joined</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr data-name="{{ user.full_name|lower }}" data-email="{{ user.email|lower }}" data-role="{{ user.role }}">
+                        <td><strong>#{{ user.id }}</strong></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" 
+                                     style="width: 36px; height: 36px;">
+                                    {{ user.full_name[0]|upper if user.full_name else 'U' }}
+                                </div>
+                                {{ user.full_name }}
+                            </div>
+                        </td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.phone_number }}</td>
+                        <td>
+                            <span class="badge {% if user.role == 'admin' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                {{ user.role }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge {% if user.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                                {% if user.is_active %}Active{% else %}Inactive{% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <small>{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else 'N/A' }}</small>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button type="button" class="btn btn-outline-info" title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-warning" title="Edit User">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                {% if not user.is_active %}
+                                <button type="button" class="btn btn-outline-success" title="Activate User">
+                                    <i class="bi bi-check-circle"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% if not users %}
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-1"></i>
+                            <p class="mt-2">No users found</p>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    {% if users %}
+    <div class="card-footer bg-white">
+        <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted">Showing all {{ users|length }} users</small>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#">Previous</a>
+                    </li>
+                    <li class="page-item active">
+                        <a class="page-link" href="#">1</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function filterUsers() {
+        const searchTerm = document.getElementById('searchName').value.toLowerCase();
+        const searchEmail = document.getElementById('searchEmail').value.toLowerCase();
+        const filterRole = document.getElementById('filterRole').value;
+        
+        const rows = document.querySelectorAll('#usersTable tbody tr[data-name]');
+        
+        rows.forEach(row => {
+            const name = row.getAttribute('data-name');
+            const email = row.getAttribute('data-email');
+            const role = row.getAttribute('data-role');
+            
+            const matchesName = !searchTerm || name.includes(searchTerm);
+            const matchesEmail = !searchEmail || email.includes(searchEmail);
+            const matchesRole = !filterRole || role === filterRole;
+            
+            if (matchesName && matchesEmail && matchesRole) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+</script>
+{% endblock %}

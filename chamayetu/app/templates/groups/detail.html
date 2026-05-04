@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h3>{{ group.name }}</h3>
+        <p class="text-muted">{{ group.description or 'No description' }}</p>
+        <div class="d-flex gap-2">
+            <span class="badge bg-primary">KES {{ "{:,.0f}".format(group.contribution_amount) }}</span>
+            <span class="badge bg-secondary">{{ group.frequency.value|capitalize }}</span>
+            <span class="badge bg-{{ 'success' if group.status == 'active' else 'warning' }}">{{ group.status|capitalize }}</span>
+        </div>
+    </div>
+    <div class="col-md-4 text-end">
+        {% if membership and group.created_by == current_user.user_id %}
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#startCycleModal">
+            <i class="bi bi-play-circle me-1"></i>Start Cycle
+        </button>
+        {% endif %}
+        <div class="mt-2">
+            <small class="text-muted">Invite Code:</small><br>
+            <strong class="fs-5">{{ group.invite_code }}</strong>
+        </div>
+    </div>
+</div>
+
+<!-- Member Queue -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0"><i class="bi bi-people me-2"></i>Member Queue ({{ members|length }}/{{ group.max_members }})</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Member</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                        <th>Joined</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for member in members %}
+                    <tr class="{{ 'table-primary' if member.user_id == current_user.user_id else '' }}">
+                        <td><strong>{{ member.queue_position }}</strong></td>
+                        <td>
+                            {{ member.user.full_name }}
+                            {% if member.user_id == group.created_by %}
+                            <span class="badge bg-warning text-dark ms-1">Admin</span>
+                            {% endif %}
+                            {% if member.has_received %}
+                            <span class="badge bg-success ms-1">Received</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ member.user.phone_number }}</td>
+                        <td>
+                            {% if active_cycle %}
+                                {% set contribution = active_cycle.contributions | selectattr("user_id", "equalto", member.user_id) | first %}
+                                {% if contribution %}
+                                    <span class="badge bg-{{ 'success' if contribution.status == 'confirmed' else 'danger' if contribution.status == 'failed' else 'warning' }}">
+                                        {{ contribution.status|capitalize }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Not started</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge bg-secondary">No active cycle</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ member.joined_at.strftime('%b %d, %Y') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Active Cycle -->
+{% if active_cycle %}
+<div class="card shadow-sm mb-4 border-primary">
+    <div class="card-header bg-primary text-white py-3">
+        <h5 class="mb-0"><i class="bi bi-arrow-repeat me-2"></i>Active Cycle #{{ active_cycle.cycle_number }}</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Beneficiary:</strong> {{ active_cycle.beneficiary.full_name }}</p>
+                <p><strong>Target:</strong> KES {{ "{:,.0f}".format(group.contribution_amount * members|length) }}</p>
+                <p><strong>Collected:</strong> KES {{ "{:,.0f}".format(active_cycle.total_collected) }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Started:</strong> {{ active_cycle.start_date.strftime('%b %d, %Y') }}</p>
+                <p><strong>Ends:</strong> {{ active_cycle.end_date.strftime('%b %d, %Y') }}</p>
+                <div class="progress">
+                    {% set progress = (active_cycle.total_collected / (group.contribution_amount * members|length) * 100) if members|length > 0 else 0 %}
+                    <div class="progress-bar" role="progressbar" style="width: {{ progress }}%">{{ "%.0f"|format(progress) }}%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Cycles History -->
+<div class="card shadow-sm">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Cycle History</h5>
+    </div>
+    <div class="card-body">
+        {% if cycles %}
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Cycle #</th>
+                        <th>Beneficiary</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cycle in cycles %}
+                    <tr>
+                        <td>{{ cycle.cycle_number }}</td>
+                        <td>{{ cycle.beneficiary.full_name }}</td>
+                        <td>KES {{ "{:,.0f}".format(cycle.total_collected) }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if cycle.status == 'disbursed' else 'primary' if cycle.status == 'active' else 'secondary' }}">
+                                {{ cycle.status|capitalize }}
+                            </span>
+                        </td>
+                        <td>{{ cycle.created_at.strftime('%b %d, %Y') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted text-center">No cycles yet. Start the first cycle to begin contributions.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Start Cycle Modal -->
+<div class="modal fade" id="startCycleModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="/groups/{{ group.id }}/start-cycle">
+                <div class="modal-header">
+                    <h5 class="modal-title">Start New Cycle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>This will start a new contribution cycle. The next member in queue who hasn't received yet will be the beneficiary.</p>
+                    <p><strong>Contribution amount:</strong> KES {{ "{:,.0f}".format(group.contribution_amount) }}</p>
+                    <p><strong>Members:</strong> {{ members|length }}</p>
+                    <p><strong>Total target:</strong> KES {{ "{:,.0f}".format(group.contribution_amount * members|length) }}</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Start Cycle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

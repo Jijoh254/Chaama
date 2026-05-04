@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item active">Notifications</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-bell me-2"></i>Your Notifications</h5>
+        <div>
+            <button class="btn btn-sm btn-outline-primary" id="mark-all-read">
+                <i class="bi bi-check-all me-1"></i>Mark All Read
+            </button>
+        </div>
+    </div>
+    
+    <div class="card-body p-0">
+        <div class="list-group list-group-flush" id="notifications-list">
+            <!-- Notifications will be loaded here -->
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-3 text-muted">Loading notifications...</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Load notifications on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        loadNotifications();
+        
+        // Mark all as read button
+        document.getElementById('mark-all-read').addEventListener('click', function() {
+            markAllAsRead();
+        });
+    });
+    
+    function loadNotifications() {
+        fetch('/api/notifications')
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('notifications-list');
+                
+                if (!data.notifications || data.notifications.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-5">
+                            <i class="bi bi-inbox fs-1 text-muted"></i>
+                            <h5 class="mt-3 text-muted">No notifications yet</h5>
+                            <p class="text-muted">You'll see updates about your groups and contributions here.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '';
+                data.notifications.forEach(notification => {
+                    const isRead = notification.is_read;
+                    const unreadClass = isRead ? '' : 'bg-light';
+                    const unreadIndicator = isRead ? '' : '<div class="position-absolute top-0 start-0 m-2"><span class="badge bg-danger rounded-circle" style="width: 8px; height: 8px;"></span></div>';
+                    
+                    html += `
+                        <div class="list-group-item ${unreadClass} position-relative" data-id="${notification.id}">
+                            ${unreadIndicator}
+                            <div class="d-flex w-100 justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1 fw-bold">${escapeHtml(notification.title)}</h6>
+                                    <p class="mb-1">${escapeHtml(notification.message)}</p>
+                                    <small class="text-muted">${formatDate(notification.created_at)}</small>
+                                </div>
+                                <div>
+                                    ${!isRead ? `<button class="btn btn-sm btn-outline-primary mark-read" data-id="${notification.id}">
+                                        <i class="bi bi-check"></i>
+                                    </button>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = html;
+                
+                // Add click handlers for mark as read buttons
+                document.querySelectorAll('.mark-read').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const notificationId = this.getAttribute('data-id');
+                        markAsRead(notificationId);
+                    });
+                });
+                
+                // Update badge
+                updateNotificationBadge();
+            })
+            .catch(err => {
+                console.error('Error loading notifications:', err);
+                document.getElementById('notifications-list').innerHTML = `
+                    <div class="alert alert-danger m-3" role="alert">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Failed to load notifications. Please refresh the page.
+                    </div>
+                `;
+            });
+    }
+    
+    function markAsRead(notificationId) {
+        fetch(`/notifications/${notificationId}/read`, { method: 'POST' })
+            .then(response => {
+                if (response.ok) {
+                    // Remove the notification from the list or update its state
+                    const item = document.querySelector(`[data-id="${notificationId}"]`);
+                    if (item) {
+                        item.classList.remove('bg-light');
+                        item.querySelector('.mark-read')?.remove();
+                        item.querySelector('.position-absolute')?.remove();
+                    }
+                    updateNotificationBadge();
+                    showToast('Success', 'Notification marked as read');
+                } else {
+                    showToast('Error', 'Failed to mark notification as read');
+                }
+            })
+            .catch(err => {
+                console.error('Error marking notification as read:', err);
+                showToast('Error', 'An error occurred');
+            });
+    }
+    
+    function markAllAsRead() {
+        fetch('/notifications/read-all', { method: 'POST' })
+            .then(response => {
+                if (response.ok) {
+                    // Reload notifications
+                    loadNotifications();
+                    showToast('Success', 'All notifications marked as read');
+                } else {
+                    showToast('Error', 'Failed to mark all notifications as read');
+                }
+            })
+            .catch(err => {
+                console.error('Error marking all notifications as read:', err);
+                showToast('Error', 'An error occurred');
+            });
+    }
+    
+    function updateNotificationBadge() {
+        fetch('/api/notifications/unread-count')
+            .then(response => response.json())
+            .then(data => {
+                const badge = document.getElementById('notification-badge');
+                if (data.count > 0) {
+                    badge.textContent = data.count;
+                    badge.classList.remove('d-none');
+                } else {
+                    badge.classList.add('d-none');
+                }
+            })
+            .catch(err => console.error('Error updating badge:', err));
+    }
+    
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+        
+        if (diffMins < 1) return 'Just now';
+        if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+        if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+        if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+        
+        return date.toLocaleDateString('en-KE', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+        });
+    }
+    
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    function showToast(title, message) {
+        const toastEl = document.getElementById('liveToast');
+        document.getElementById('toast-title').textContent = title;
+        document.getElementById('toast-message').textContent = message;
+        const toast = new bootstrap.Toast(toastEl);
+        toast.show();
+    }
+</script>
+{% endblock %}

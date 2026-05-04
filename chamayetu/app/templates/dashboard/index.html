@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <!-- Statistics Cards -->
+    <div class="col-md-3">
+        <div class="card bg-primary text-white h-100 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-2">My Groups</h6>
+                        <h2 class="mb-0">{{ stats.groups_count }}</h2>
+                    </div>
+                    <i class="bi bi-people fs-1 opacity-50"></i>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a href="/groups" class="text-white text-decoration-none small">
+                    View all groups <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-success text-white h-100 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-2">Active Cycles</h6>
+                        <h2 class="mb-0">{{ stats.active_cycles_count }}</h2>
+                    </div>
+                    <i class="bi bi-arrow-repeat fs-1 opacity-50"></i>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <small>Currently contributing</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-info text-white h-100 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-2">Total Contributions</h6>
+                        <h2 class="mb-0">{{ stats.contributions_count }}</h2>
+                    </div>
+                    <i class="bi bi-cash-stack fs-1 opacity-50"></i>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <small>All time</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark h-100 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-2">Pending Payments</h6>
+                        <h2 class="mb-0">{{ stats.pending_contributions }}</h2>
+                    </div>
+                    <i class="bi bi-exclamation-circle fs-1 opacity-50"></i>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                {% if stats.pending_contributions > 0 %}
+                <a href="/contributions/history" class="text-dark text-decoration-none small">
+                    Pay now <i class="bi bi-arrow-right"></i>
+                </a>
+                {% else %}
+                <small>All caught up!</small>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Groups & Activity -->
+<div class="row g-4">
+    <!-- Recent Groups -->
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0"><i class="bi bi-people me-2"></i>Recent Groups</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_groups %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Group Name</th>
+                                <th>Contribution</th>
+                                <th>Frequency</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for group in recent_groups %}
+                            <tr>
+                                <td>
+                                    <strong>{{ group.name }}</strong>
+                                    <br><small class="text-muted">{{ group.description[:50] }}...</small>
+                                </td>
+                                <td>KES {{ "{:,.0f}".format(group.contribution_amount) }}</td>
+                                <td>{{ group.frequency.value|capitalize }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if group.status == 'active' else 'secondary' }}">
+                                        {{ group.status|capitalize }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="/groups/{{ group.id }}" class="btn btn-sm btn-outline-primary">
+                                        View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-people fs-1 text-muted"></i>
+                    <p class="text-muted mt-3">You haven't joined any groups yet.</p>
+                    <a href="/groups" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-2"></i>Create or Join a Group
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Activity -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Recent Activity</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_activity %}
+                <div class="list-group list-group-flush">
+                    {% for contribution in recent_activity %}
+                    <div class="list-group-item px-0">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">
+                                {% if contribution.status == 'confirmed' %}
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                {% elif contribution.status == 'failed' %}
+                                <i class="bi bi-x-circle-fill text-danger me-2"></i>
+                                {% else %}
+                                <i class="bi bi-hourglass-split text-warning me-2"></i>
+                                {% endif %}
+                                Contribution
+                            </h6>
+                            <small class="text-muted">{{ contribution.initiated_at.strftime('%b %d') }}</small>
+                        </div>
+                        <p class="mb-1">
+                            <strong>KES {{ "{:,.0f}".format(contribution.amount) }}</strong>
+                        </p>
+                        <small class="text-muted">
+                            Status: 
+                            <span class="badge bg-{{ 'success' if contribution.status == 'confirmed' else 'danger' if contribution.status == 'failed' else 'warning' }}">
+                                {{ contribution.status|capitalize }}
+                            </span>
+                        </small>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-receipt fs-1 text-muted"></i>
+                    <p class="text-muted mt-2 mb-0">No contributions yet</p>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-white">
+                <a href="/contributions/history" class="btn btn-outline-primary btn-sm w-100">
+                    View All Contributions
+                </a>
+            </div>
+        </div>
+        
+        <!-- Notifications Quick View -->
+        <div class="card shadow-sm mt-4">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0"><i class="bi bi-bell me-2"></i>Notifications</h5>
+            </div>
+            <div class="card-body">
+                {% if stats.unread_notifications > 0 %}
+                <div class="alert alert-info mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    You have <strong>{{ stats.unread_notifications }}</strong> unread notification(s)
+                </div>
+                <a href="/notifications" class="btn btn-outline-primary btn-sm w-100 mt-2">
+                    View Notifications
+                </a>
+                {% else %}
+                <div class="text-center py-3">
+                    <i class="bi bi-bell-slash fs-1 text-muted"></i>
+                    <p class="text-muted mb-0">No new notifications</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

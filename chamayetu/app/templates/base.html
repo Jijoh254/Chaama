@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - ChamaYetu</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/theme.css">
+</head>
+<body class="bg-light">
+    <!-- Sidebar for authenticated pages -->
+    {% if request.cookies.get('access_token') %}
+    <div class="d-flex" id="wrapper">
+        <!-- Sidebar -->
+        <div class="bg-dark text-white" id="sidebar-wrapper">
+            <div class="sidebar-heading text-center py-4 primary-text fs-4 fw-bold text-uppercase border-bottom">
+                <i class="bi bi-people-fill me-2"></i>ChamaYetu
+            </div>
+            <div class="list-group list-group-flush my-3">
+                <a href="/dashboard" class="list-group-item list-group-item-action bg-transparent second-text active">
+                    <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                </a>
+                <a href="/groups" class="list-group-item list-group-item-action bg-transparent second-text">
+                    <i class="bi bi-people me-2"></i>My Groups
+                </a>
+                <a href="/contributions/history" class="list-group-item list-group-item-action bg-transparent second-text">
+                    <i class="bi bi-cash-stack me-2"></i>Contributions
+                </a>
+                <a href="/notifications" class="list-group-item list-group-item-action bg-transparent second-text">
+                    <i class="bi bi-bell me-2"></i>Notifications
+                    <span id="notification-badge" class="badge bg-danger rounded-pill d-none">0</span>
+                </a>
+                <a href="/auth/logout" class="list-group-item list-group-item-action bg-transparent text-danger fw-bold">
+                    <i class="bi bi-box-arrow-left me-2"></i>Logout
+                </a>
+            </div>
+        </div>
+        
+        <!-- Page Content -->
+        <div id="page-content-wrapper" class="w-100">
+            <!-- Top Navigation -->
+            <nav class="navbar navbar-expand-lg navbar-light bg-white py-3 px-4 shadow-sm">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-list fs-4 me-3" id="menu-toggle" style="cursor: pointer;"></i>
+                    <h2 class="fs-4 m-0">{{ title }}</h2>
+                </div>
+                
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle second-text fw-bold" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle me-2"></i>
+                                {% if current_user %}{{ current_user.get('full_name', 'User') }}{% else %}Account{% endif %}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="/dashboard"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="/auth/logout"><i class="bi bi-box-arrow-left me-2"></i>Logout</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            
+            <!-- Main Content -->
+            <div class="container-fluid px-4 py-4">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- No sidebar for auth pages (login/register) -->
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+    {% endif %}
+    
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto" id="toast-title">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" id="toast-message">
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JavaScript -->
+    <script src="/static/js/app.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
