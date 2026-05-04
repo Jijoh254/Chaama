@@ -59,8 +59,8 @@ async def admin_dashboard_page(
     recent_cycles = db.query(Cycle).order_by(Cycle.created_at.desc()).limit(5).all()
     
     return templates.TemplateResponse(
-        name="admin/dashboard.html",
-        context={
+        "admin/dashboard.html",
+        {
             "request": request,
             "title": "Admin Dashboard",
             "current_user": current_user,
@@ -93,8 +93,8 @@ async def admin_users_page(
     users = db.query(User).order_by(User.created_at.desc()).all()
     
     return templates.TemplateResponse(
-        name="admin/users.html",
-        context={
+        "admin/users.html",
+        {
             "request": request,
             "title": "Manage Users",
             "current_user": current_user,
@@ -118,8 +118,8 @@ async def admin_groups_page(
     groups = db.query(Group).order_by(Group.created_at.desc()).all()
     
     return templates.TemplateResponse(
-        name="admin/groups.html",
-        context={
+        "admin/groups.html",
+        {
             "request": request,
             "title": "Manage Groups",
             "current_user": current_user,
@@ -132,8 +132,8 @@ async def admin_groups_page(
 async def setup_admin_page(request: Request):
     """Initial admin setup page (only if no admin exists)."""
     return templates.TemplateResponse(
-        name="admin/setup.html",
-        context={"request": request, "title": "Setup Admin Account"}
+        "admin/setup.html",
+        {"request": request, "title": "Setup Admin Account"}
     )
 
 
@@ -165,8 +165,8 @@ async def setup_admin_submit(
     
     if errors:
         return templates.TemplateResponse(
-            name="admin/setup.html",
-            context={
+            "admin/setup.html",
+            {
                 "request": request,
                 "title": "Setup Admin Account",
                 "errors": errors

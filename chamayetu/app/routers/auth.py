@@ -39,8 +39,8 @@ async def login_page(
         return RedirectResponse(url="/dashboard", status_code=status.HTTP_302_FOUND)
     
     return templates.TemplateResponse(
-        name="auth/login.html",
-        context={"request": request, "title": "Login"}
+        "auth/login.html",
+        {"request": request, "title": "Login"}
     )
 
 
@@ -58,8 +58,8 @@ async def login_submit(
     if not user:
         # Invalid credentials - re-render login with error
         return templates.TemplateResponse(
-            name="auth/login.html",
-            context={
+            "auth/login.html",
+            {
                 "request": request,
                 "title": "Login",
                 "error": "Invalid email or password"
@@ -98,8 +98,8 @@ async def register_page(
         return RedirectResponse(url="/dashboard", status_code=status.HTTP_302_FOUND)
     
     return templates.TemplateResponse(
-        name="auth/register.html",
-        context={"request": request, "title": "Register"}
+        "auth/register.html",
+        {"request": request, "title": "Register"}
     )
 
 
@@ -142,8 +142,8 @@ async def register_submit(
     
     if errors:
         return templates.TemplateResponse(
-            name="auth/register.html",
-            context={
+            "auth/register.html",
+            {
                 "request": request,
                 "title": "Register",
                 "errors": errors,
