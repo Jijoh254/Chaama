@@ -21,48 +21,12 @@ wheels/
 .installed.cfg
 *.egg
 
-# Virtual environments
-venv/
-ENV/
-env.bak/
-.venv/
-env/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Logs
-*.log
-
-# Environment variables
+# Environment
 .env
-.env.local
-*.env.*
+.env.*
 
-# Coverage reports
-.coverage
-coverage/
-htmlcov/
-
-# Mypy cache
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pytest cache
-.pytest_cache/
-
-# Alembic
-alembic/versions/*.pyc
-
-# Static files (if they get rebuilt)
-static/css/*.map
-static/js/*.map
+# Compiled Python
+**/__pycache__/
+**/*.py[cod]
+**/*$py.class
 ```
